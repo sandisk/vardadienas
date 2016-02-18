@@ -6,10 +6,10 @@ require 'tzinfo'
 require 'iconv'
 
 credentials = {
-  :consumer_key        => '',
-  :consumer_secret     => '',
-  :access_token        => '',
-  :access_token_secret => ''
+  consumer_key:        ENV['TWITTER_CONSUMER_KEY'],
+  consumer_secret:     ENV['TWITTER_CONSUMER_SECRET'],
+  access_token:        ENV['TWITTER_ACCESS_TOKEN'],
+  access_token_secret: ENV['TWITTER_ACCESS_TOKEN_SECRET']
 }
 
 local_months = [
@@ -20,12 +20,10 @@ local_months = [
 ic        = Iconv.new 'UTF-8//IGNORE', 'UTF-8'
 name_data = JSON.parse ic.iconv(IO.read(File.dirname(__FILE__) + '/vardadienas.json'))
 
-tz        = TZInfo::Timezone.get 'Europe/Riga'
-t         = tz.utc_to_local Time.now.utc
-names     = name_data[t.month.to_s][t.day.to_s].join(', ')
-
-status    = t.strftime('%_d. ') + local_months[t.month - 1] + ': ' +  names
-status    += '.' if t.hour > 12 # Twitter doesn't like dupes and we post twice a day
+tz     = TZInfo::Timezone.get 'Europe/Riga'
+time   = tz.utc_to_local Time.now.utc
+names  = name_data[time.month.to_s][time.day.to_s].join(', ')
+status = time.strftime('%_d. ') + local_months[time.month - 1] + ': ' +  names
 
 client = Twitter::REST::Client.new do |config|
   config.consumer_key        = credentials[:consumer_key]
